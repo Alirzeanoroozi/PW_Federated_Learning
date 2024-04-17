@@ -4,7 +4,8 @@ import torch.optim as optim
 import torch.nn.functional as F
 import time
 
-from utils import evaluate_server, load_model, print_time
+from models import load_model
+from utils import evaluate_server, print_time
 
 
 class BaseLine:
@@ -14,7 +15,7 @@ class BaseLine:
         self.total_iters = config['total_iterations']
         self.test_loader = test_loader
         self.train_loader = train_loader
-        self.mdl = load_model(config['model'], config['n_class'], channel=config['channel']).to(self.device)
+        self.mdl = load_model(config['model']).to(self.device)
         self.lr = config['lr']
         self.loss_fn = nn.CrossEntropyLoss()
 

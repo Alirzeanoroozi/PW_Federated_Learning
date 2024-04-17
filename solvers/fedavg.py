@@ -1,12 +1,14 @@
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 import torch.optim as optim
 import random
 import time
 import copy
 from collections import OrderedDict
 
-from utils import evaluate_server, load_model, print_time, get_latest_model
+from models import load_model
+from utils import evaluate_server, print_time, get_latest_model
 
 
 class Client:
@@ -18,8 +20,8 @@ class Client:
 
     def train_client(self, device):
         self.mdl = self.mdl.to(device)
-        self.opt = optim.SGD(self.mdl.parameters(), lr=self.lr)
-        self.loss_fn = nn.CrossEntropyLoss(reduction="mean")
+        self.opt = optim.Adam(self.mdl.parameters(), lr=self.lr)
+        self.loss_fn = nn.CrossEntropyLoss()
 
         self.mdl.train()
         len_train = len(self.train_loader)
@@ -34,10 +36,19 @@ class Client:
                 self.opt.zero_grad()
                 scores = self.mdl(data)
 
-                loss = self.loss_fn(scores, target)
+                B, T, C = scores.shape
+                logits = scores.reshape(B * T, C)
+                targets = target.view(B * T)
+
+                loss = self.loss_fn(logits, targets)
                 cur_loss += loss.item() / len_train
 
-                _, predicted = torch.max(scores, dim=1)
+                scores = scores[:, -1, :]  # becomes (B, C)
+                # apply softmax to get probabilities
+                probs = F.softmax(scores, dim=-1)  # (B, C)
+                _, predicted = torch.max(probs, dim=1)
+                target = target[:, -1]
+
                 correct = (predicted == target).sum()
                 samples = scores.shape[0]
                 cur_acc += correct / (samples * len_train)

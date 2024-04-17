@@ -7,7 +7,7 @@ from solvers.pw import PW
 from utils import initialize_model
 
 config = {
-    'solver': "pw",  # ['fed_avg', 'pw']
+    'solver': "fed_avg",  # ['fed_avg', 'pw']
     'model': "LSTM",  # ['basic', '2NN', 'LSTM']
 
     'dataset': "Sheks",  # ["mnist", "Sheks", "cifar-10"]
@@ -15,6 +15,7 @@ config = {
 
     'client_type': "n-iid",  # ["iid", "n-iid"]
     'num_clients': 100,
+    'blk_size': 80,
 
     'sample_clients': .01,   # C
     'client_iterations': 2,  # epochs E
