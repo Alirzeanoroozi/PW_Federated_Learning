@@ -117,7 +117,7 @@ class FedAvg:
             self.server.aggregate_models([self.clients[i].mdl for i in clients_selected],
                                          [len(self.clients[i].train_loader.dataset) for i in clients_selected])
 
-            acc, loss = evaluate_server(self.server.mdl, self.test_loaders, self.device)
+            acc, loss = evaluate_server(self.server.mdl, [self.test_loaders[i] for i in clients_selected], self.device)
             accs.append(acc)
             loss_s.append(loss)
 
