@@ -10,12 +10,14 @@ the directories written into the files are of the form 'raw_data/...'
 
 import os
 import sys
+import util
+
 
 utils_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 utils_dir = os.path.join(utils_dir, 'utils')
 sys.path.append(utils_dir)
 
-import util
+# import util
 
 parent_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 

@@ -1,3 +1,4 @@
+from data.Femnist_data import get_femnist_dataloaders
 from data.Sheks_data import get_sheks_dataloaders
 from data.data import get_data, get_train_loaders
 from plots.plot import save_log
@@ -8,9 +9,9 @@ from utils import initialize_model
 
 config = {
     'solver': "fed_avg",  # ['fed_avg', 'pw']
-    'model': "LSTM",  # ['basic', '2NN', 'LSTM']
+    'model': "MLP",  # ['basic', '2NN', 'LSTM', 'MLP']
 
-    'dataset': "Sheks",  # ["mnist", "Sheks", "cifar-10"]
+    'dataset': "FEMNIST",  # ["Sheks", "cifar-10", "FEMNIST"]
     'batch_size': 10,
 
     'client_type': "n-iid",  # ["iid", "n-iid"]
@@ -31,6 +32,8 @@ initialize_model()
 
 if config["dataset"] == "Sheks":
     train_loaders, test_loaders = get_sheks_dataloaders(config)
+elif config["dataset"] == "FEMNIST":
+    train_loaders, test_loaders = get_femnist_dataloaders(config)
 else:
     train_dataset, train_loader, test_loader = get_data(config)
     test_loaders = [test_loader]

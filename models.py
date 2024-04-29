@@ -9,8 +9,8 @@ def load_model(config):
         return MNIST_2NN()
     elif config['model'] == "LSTM":
         return NextWordModel()
-    elif config['model'] == "LSTM":
-        return NextWordModel()
+    elif config['model'] == "MLP":
+        return MLP()
 
 
 class BasicNet(nn.Module):
@@ -40,6 +40,20 @@ class MNIST_2NN(nn.Module):
         self.flatten = nn.Flatten()
         self.fc1 = nn.Linear(28*28, 200)
         self.fc2 = nn.Linear(200, 10)
+
+    def forward(self, x):
+        x = self.flatten(x)
+        x = torch.relu(self.fc1(x))
+        x = torch.softmax(self.fc2(x), dim=1)
+        return x
+
+
+class MLP(nn.Module):
+    def __init__(self):
+        super(MLP, self).__init__()
+        self.flatten = nn.Flatten()
+        self.fc1 = nn.Linear(28*28, 128)
+        self.fc2 = nn.Linear(128, 62)
 
     def forward(self, x):
         x = self.flatten(x)

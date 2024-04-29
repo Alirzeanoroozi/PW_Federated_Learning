@@ -3,7 +3,7 @@ from torch.utils.data import random_split, DataLoader, Subset, Dataset
 import torchvision.transforms as transforms
 
 
-class NextCharDataset(Dataset):
+class OwnDataset(Dataset):
     def __init__(self, X, Y):
         self.__X = X
         self.__Y = Y

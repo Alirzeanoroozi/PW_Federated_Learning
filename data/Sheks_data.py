@@ -2,7 +2,7 @@ import json
 import os
 import torch
 from torch.utils.data import DataLoader
-from data.data import NextCharDataset
+from data.data import OwnDataset
 
 
 def get_sheks_dataloaders(config):
@@ -50,8 +50,8 @@ def get_sheks_dataloaders(config):
             y_train = torch.tensor([encode(text) for text in y_train])
             y_test = torch.tensor([encode(text) for text in y_test])
 
-            train_Dataset = NextCharDataset(X_train, y_train)
-            test_Dataset = NextCharDataset(X_test, y_test)
+            train_Dataset = OwnDataset(X_train, y_train)
+            test_Dataset = OwnDataset(X_test, y_test)
 
             train_loaders.append(DataLoader(train_Dataset, batch_size=config['batch_size']))
             test_loaders.append(DataLoader(test_Dataset, batch_size=config['batch_size']))

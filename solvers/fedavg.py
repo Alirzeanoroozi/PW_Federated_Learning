@@ -17,6 +17,7 @@ class Client:
         self.train_loader = train_loader
         self.mdl = load_model(config)
         self.n_epochs = config['client_iterations']
+        self.config = config
 
     def train_client(self, device):
         self.mdl = self.mdl.to(device)
@@ -36,18 +37,24 @@ class Client:
                 self.opt.zero_grad()
                 scores = self.mdl(data)
 
-                B, T, C = scores.shape
-                logits = scores.reshape(B * T, C)
-                targets = target.view(B * T)
+                if self.config['dataset'] == "Sheks":
+                    B, T, C = scores.shape
+                    logits = scores.reshape(B * T, C)
+                    targets = target.view(B * T)
 
-                loss = self.loss_fn(logits, targets)
-                cur_loss += loss.item() / len_train
+                    loss = self.loss_fn(logits, targets)
+                    cur_loss += loss.item() / len_train
 
-                scores = scores[:, -1, :]  # becomes (B, C)
-                # apply softmax to get probabilities
-                probs = F.softmax(scores, dim=-1)  # (B, C)
-                _, predicted = torch.max(probs, dim=1)
-                target = target[:, -1]
+                    scores = scores[:, -1, :]  # becomes (B, C)
+                    # apply softmax to get probabilities
+                    probs = F.softmax(scores, dim=-1)  # (B, C)
+                    _, predicted = torch.max(probs, dim=1)
+                    target = target[:, -1]
+                else:
+                    loss = self.loss_fn(scores, target)
+                    cur_loss += loss.item() / len_train
+
+                    _, predicted = torch.max(scores, dim=1)
 
                 correct = (predicted == target).sum()
                 samples = scores.shape[0]
@@ -117,7 +124,7 @@ class FedAvg:
             self.server.aggregate_models([self.clients[i].mdl for i in clients_selected],
                                          [len(self.clients[i].train_loader.dataset) for i in clients_selected])
 
-            acc, loss = evaluate_server(self.server.mdl, [self.test_loaders[i] for i in clients_selected], self.device)
+            acc, loss = evaluate_server(self.server.mdl, [self.test_loaders[i] for i in clients_selected], self.device, self.config)
             accs.append(acc)
             loss_s.append(loss)
 

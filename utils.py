@@ -22,6 +22,8 @@ def get_latest_model(config):
     if not os.path.isdir(folder_path):
         os.mkdir(folder_path)
         return 0, None
+    elif len(os.listdir(folder_path)) == 0:
+        return 0, None
     else:
         files = sorted(os.listdir(folder_path))
         return int(files[-1].split(".")[0]), torch.load(os.path.join(folder_path, files[-1]))
@@ -35,7 +37,7 @@ def print_time(end_time, start_time):
     print(f"training done in {hr} H {mi} M {sec} S")
 
 
-def evaluate_server(model, loaders, device):
+def evaluate_server(model, loaders, device, config):
     model = model.to(device)
     model.eval()
 
@@ -57,20 +59,28 @@ def evaluate_server(model, loaders, device):
 
                 scores = model(data)
 
-                B, T, C = scores.shape
-                logits = scores.reshape(B * T, C)
-                targets = target.view(B * T)
+                if config['dataset'] == "Sheks":
+                    B, T, C = scores.shape
+                    logits = scores.reshape(B * T, C)
+                    targets = target.view(B * T)
 
-                scores = scores[:, -1, :]  # becomes (B, C)
-                # apply softmax to get probabilities
-                probs = F.softmax(scores, dim=-1)  # (B, C)
-                _, predicted = torch.max(probs, dim=1)
-                target = target[:, -1]
+                    cur_loss += loss_fn(logits, targets) / (samples * len_train)
+
+
+                    scores = scores[:, -1, :]  # becomes (B, C)
+                    # apply softmax to get probabilities
+                    probs = F.softmax(scores, dim=-1)  # (B, C)
+                    _, predicted = torch.max(probs, dim=1)
+                    target = target[:, -1]
+                else:
+                    loss = loss_fn(scores, target)
+                    cur_loss += loss.item() / len_train
+
+                    _, predicted = torch.max(scores, dim=1)
 
                 correct = (predicted == target).sum()
                 samples = scores.shape[0]
                 cur_acc += correct / (samples * len_train)
-                cur_loss += loss_fn(logits, targets) / (samples * len_train)
 
         total_acc += cur_acc / len(loaders)
         total_loss += cur_loss / len(loaders)
